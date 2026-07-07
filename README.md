@@ -112,10 +112,45 @@ chroot /rootfs /bin/bash
 
 # 配置 apt 镜像源
 vi /etc/apt/source.list
+
+# 更新软件包列表
 apt update
 
-# 安装systemd服务, 安装ssh服务
-apt install systemd network-manager sshd
+# 安装 systemd 及相关组件
+apt install -y systemd systemd-sysv systemd-timesyncd systemd-resolved dbus dbus-user-session libpam-systemd
+
+# 安装网络管理工具
+apt install -y network-manager netplan.io ifupdown net-tools iputils-ping iproute2
+
+# 安装基础工具
+apt install -y vim nano sudo bash-completion htop less curl wget
+
+# 设置默认启动目标为多用户模式
+systemctl set-default multi-user.target
+
+# 创建必要的符号链接
+ln -sf /lib/systemd/system/multi-user.target /etc/systemd/system/default.target
+
+# 启用核心服务
+systemctl enable systemd-journald
+systemctl enable systemd-logind
+systemctl enable systemd-resolved
+systemctl enable systemd-timesyncd
+systemctl enable dbus
+
+# 配置 DNS 解析
+ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf
+
+# 创建用户
+useradd -m -s /bin/bash admin
+passwd admin  # 设置密码
+
+# 添加 sudo 权限
+usermod -aG sudo admin
+
+# SSH 服务器（便于远程管理）
+apt install -y openssh-server
+systemctl enable ssh
 
 # 网络连接后可通过 ssh 连接 shell
 # windows 终端执行
