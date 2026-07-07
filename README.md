@@ -165,20 +165,67 @@ nameserver 223.6.6.6
 
 ```bash
 # 对 SD 卡 / eMMC 进行分区
-fdisk /dev/mmcblk0
+fdisk /dev/mmcblk1
+# 创建 MBR 分区表
+Command (m for help): o
+# 创建新分区 FAT32 BOOT
+Command (m for help): n
+Partition type
+   p   primary (0 primary, 0 extended, 4 free)
+   e   extended (container for logical partitions)
+Select (default p): p
+Partition number (1-4, default 1): 1
+First sector (2048-2097151, default 2048): 2048
+Last sector, +/-sectors or +/-size{K,M,G,T,P} (2048-2097151, default 2097151): +64M
+
+Created a new partition 1 of type 'Linux' and of size 64 MiB.
+
+# 创建新分区 Linux ROOT
+Command (m for help): n
+Partition type
+   p   primary (1 primary, 0 extended, 3 free)
+   e   extended (container for logical partitions)
+Select (default p):
+
+Using default response p.
+Partition number (2-4, default 2):
+First sector (133120-2097151, default 133120):
+Last sector, +/-sectors or +/-size{K,M,G,T,P} (133120-2097151, default 2097151):
+
+Created a new partition 2 of type 'Linux' and of size 959 MiB.
+
+# 设置分区为 FAT32 格式
+Command (m for help): t
+Partition number (1,2, default 2): 1
+Hex code or alias (type L to list all): c
+
+Changed type of partition 'Linux' to 'W95 FAT32 (LBA)'.
+
+# 设置 BOOT Flag
+Command (m for help): a
+Partition number (1,2, default 2): 1
+
+The bootable flag on partition 1 is enabled now.
+
+# 写入并保存
+Command (m for help): w
+
+# 格式化分区
+mkfs.vfat /dev/mmcblk1p1
+mkfs.ext2 /dev/mmcblk1p2
 ```
 
 分区方案：
 
 | 分区 | 类型 | 用途 |
 |------|------|------|
-| `/dev/mmcblk0p1` | FAT32 | boot 分区 |
-| `/dev/mmcblk0p2` | ext4 | rootfs 分区 |
+| `/dev/mmcblk1p1` | FAT32 | boot 分区 |
+| `/dev/mmcblk1p2` | ext4 | rootfs 分区 |
 
 ### 6.3 创建BOOT分区
 ``` bash
-# 挂载 /dev/mmcblk0p1 到 /boot 目录
-mount /dev/mmcblk0p1 /boot
+# 挂载 /dev/mmcblk1p1 到 /boot 目录
+mount /dev/mmcblk1p1 /boot
 # 复制 fat32_boot 的内容到 /boot 目录
 # uboot启动脚本优先使用 /boot 分区的内核和设备树启动Linux
 # 失败则回退到QSPI内的内核启动
