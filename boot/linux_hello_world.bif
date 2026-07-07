@@ -1,0 +1,7 @@
+//arch = zynq; split = false; format = BIN
+the_ROM_image:
+{
+	[bootloader]D:\workspace\project_verilog\platform\zynq_fsbl\build\fsbl.elf
+	D:\workspace\project_verilog\platform\zynq_fsbl\build\u-boot.elf
+	[load = 0x200000]D:\workspace\project_verilog\platform\zynq_fsbl\build\zynq-booom.dtb
+}
