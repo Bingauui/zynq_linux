@@ -1,0 +1,23 @@
+#!/bin/sh
+
+
+busybox devmem 0x40001000 8 1
+LINK_FILE="/etc/systemd/network/10-eth0.link"
+if [ ! -f "$LINK_FILE" ] && [ -e "/sys/class/net/eth0" ]; then
+    CURRENT_MAC=$(cat /sys/class/net/eth0/address)
+    if [ -n "$CURRENT_MAC" ] && [ "$CURRENT_MAC" != "00:00:00:00:00:00" ]; then
+        mkdir -p /etc/systemd/network
+        cat > "$LINK_FILE" << EOF
+[Match]
+OriginalName=eth0
+
+[Link]
+MACAddressPolicy=none
+MACAddress=$CURRENT_MAC
+EOF
+        logger -t rc.local "MAC address $CURRENT_MAC saved to $LINK_FILE"
+        udevadm control --reload-rules
+    fi
+fi
+echo "spi1.1" > /sys/bus/spi/drivers/panel-mipi-dbi-spi/bind
+exit 0

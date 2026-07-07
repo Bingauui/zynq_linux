@@ -1,135 +1,229 @@
 # ZYNQ Boooom Linux 安装流程
-## BOOT 烧录
 
-### 硬件准备
-#### ZYNQ Boooom 核心板 * 1
-#### ZYNQ Boooom 底板 * 1
-#### FTDI 调试器 * 1
+## 1. 硬件准备
 
-### 软件安装
-#### Vitis 2023.02 
-- BOOT.bin 生成工具
-- 烧录QSPI Flash 工具
-- fsbl 固件编译
+| 硬件 | 数量 |
+|------|------|
+| ZYNQ Boooom 核心板 | 1 |
+| ZYNQ Boooom 底板 | 1 |
+| FTDI 调试器 | 1 |
 
-#### Vivado 2023.02
-- FPGA bit流生成
-- PS 外设引脚导出
+## 2. 软件安装
 
-### 目录结构
-``` bash
-boot 
-    boot.bin # BOOT.bin 文件 合并fsbl.elf uboot.elf zynq-boooom.dtb
-    boot.scr # u-boot 启动脚本
-    design_1_wrapper.bit # FPGA bit流
-    fsbl.elf # 一级引导程序
-    fsbl.elf.size 
-    linux_boooom.img # 全分区镜像文件
-    linux_hello_world.bif # BOOT.bin 合并配置文件 
-    openocd.cfg # openocd 配置
-    u-boot.elf # u-boot引导程序
-    uRamdisk # initramfs 
-    zImage # kernel 内核镜像
-    zynq-booom.dtb #设备树文件
-rootfs
-    ubuntu-base-22.04-base-armhf.tar.gz # 基础 ubuntu 根文件系统
-source # 最新的主线代码即可
-    zynq_boooom_defconfig # kernel 编译配置文件
-    zynq-booom.dts # 设备树
-    u-boot.config # u-boot 编译配置文件
-    panel-mipi-dbi-spi.bin # 屏幕初始化序列固件
-    device-overlay # 设备树插件，编译后在uEnv添加启用
-    boot.cmd # u-boot 启动脚本
+| 工具 | 用途 |
+|------|------|
+| **Vivado 2023.02** | FPGA bit 流生成、PS 外设引脚导出 |
+| **Vitis 2023.02** | BOOT.bin 生成、QSPI Flash 烧录、FSBL 固件编译 |
+
+## 3. 目录结构
+
+### 启动文件 (`boot/`)
+
+```
+boot/
+├── boot.bin                   # BOOT.bin 文件，合并 fsbl.elf + uboot.elf + zynq-boooom.dtb
+├── boot.scr                   # u-boot 启动脚本
+├── design_1_wrapper.bit       # FPGA bit 流
+├── fsbl.elf                   # 一级引导程序 (FSBL)
+├── fsbl.elf.size
+├── linux_boooom.img           # QSPI 全分区镜像文件
+├── linux_hello_world.bif      # BOOT.bin 合并配置文件
+├── openocd.cfg                # OpenOCD 调试器配置
+├── u-boot.elf                 # u-boot 引导程序
+├── uRamdisk                   # initramfs 内存文件系统
+├── zImage                     # Linux 内核镜像
+└── zynq-booom.dtb             # 设备树文件
 ```
 
-### QSPI 分区表
-``` bash
-0x000000000000-0x000000200000 : "qspi-fsbl-uboot"  : 2M
-0x000000200000-0x000000a00000 : "qspi-linux"       : 8M
-0x000000a00000-0x000000a80000 : "qspi-device-tree" : 512K
-0x000000a80000-0x000000b00000 : "qspi-uboot-cmd"   : 512K
-0x000000b00000-0x000000d00000 : "qspi-rootfs"      : 2M
-0x000000d00000-0x000001000000 : "qspi-bitstream"   : 3M
+### 根文件系统 (`rootfs/`)
+
+```
+rootfs/
+└── ubuntu-base-22.04-base-armhf.tar.gz   # Ubuntu 22.04 基础根文件系统
 ```
 
-### 直接烧录全量镜像
-#### 烧录镜像前切换为 JTAG 启动
-#### 所有路径替换为实际文件的绝对路径
-``` bash
-($Vitis_INSTALL_PATH)\program_flash -f $BOOT_PATH\linux_boooom.img -offset 0x0 -flash_type qspi-x4-single -fsbl $BOOT_PATH\fsbl.elf -verify -url TCP:127.0.0.1:3121
+### 源码与配置 (`source/`)
+
+```
+source/
+├── zynq_boooom_defconfig      # Linux 内核编译配置
+├── zynq-booom.dts             # 设备树源文件
+├── u-boot.config              # u-boot 编译配置
+├── st7789c.py                 # LCD 屏幕初始化固件生成脚本
+├── panel-mipi-dbi-spi.bin     # 屏幕初始化序列固件（复制到 /lib/firmware）
+├── zynq-7000-*.dts            # 设备树插件，编译后在 uEnv 中启用
+├── boot.cmd                   # u-boot 启动脚本源文件
+├── etc/rc.local               # 启动脚本：加载 SPI LCD 驱动 / 固定 ETH MAC 地址
+└── usb_ncm_setup.sh           # USB NCM 网卡 DHCP 配置脚本
 ```
 
-### 分区烧录 (二选一，新板子可直接进行全量烧录)
-#### 烧录镜像前切换为 JTAG 启动
-``` bash
-# 烧录BOOT.bin
-($Vitis_INSTALL_PATH)\program_flash -f $BOOT_PATH\boot.bin -offset 0x0 -flash_type qspi-x4-single -fsbl $BOOT_PATH\fsbl.elf -verify -url TCP:127.0.0.1:3121
+## 4. QSPI 分区表
 
-# 烧录Kernel
-($Vitis_INSTALL_PATH)\program_flash -f $BOOT_PATH\zImage -offset 0x200000 -flash_type qspi-x4-single -fsbl $BOOT_PATH\fsbl.elf -verify -url TCP:127.0.0.1:3121
+| 起始地址 | 结束地址 | 分区名 | 大小 |
+|----------|----------|--------|------|
+| `0x000000000000` | `0x000000200000` | qspi-fsbl-uboot | 2 MB |
+| `0x000000200000` | `0x000000a00000` | qspi-linux | 8 MB |
+| `0x000000a00000` | `0x000000a80000` | qspi-device-tree | 512 KB |
+| `0x000000a80000` | `0x000000b00000` | qspi-uboot-cmd | 512 KB |
+| `0x000000b00000` | `0x000000d00000` | qspi-rootfs | 2 MB |
+| `0x000000d00000` | `0x000001000000` | qspi-bitstream | 3 MB |
 
-# 烧录dtb
-($Vitis_INSTALL_PATH)\program_flash -f $BOOT_PATH\zynq-booom.dtb -offset 0xa00000 -flash_type qspi-x4-single -fsbl $BOOT_PATH\fsbl.elf -verify -url TCP:127.0.0.1:3121
+## 5. 烧录 QSPI Flash
 
-# 烧录uRamDisk
-($Vitis_INSTALL_PATH)\program_flash -f $BOOT_PATH\uRamdisk -offset 0xa00000 -flash_type qspi-x4-single -fsbl $BOOT_PATH\fsbl.elf -verify -url TCP:127.0.0.1:3121
+### 准备工作
+
+- 将启动模式切换为 **JTAG 启动**
+- 将以下命令中的 `$Vitis_INSTALL_PATH` 和 `$BOOT_PATH` 替换为实际绝对路径
+
+### 方式一：全量烧录（推荐，适用于新板）
+
+一次性烧录整个镜像文件：
+
+```bash
+$Vitis_INSTALL_PATH/program_flash \
+  -f $BOOT_PATH/linux_boooom.img \
+  -offset 0x0 \
+  -flash_type qspi-x4-single \
+  -fsbl $BOOT_PATH/fsbl.elf \
+  -verify \
+  -url TCP:127.0.0.1:3121
 ```
 
-### 烧录完成后切换为 QSPI 启动
-#### 连接调试器后启用串口终端
-#### 烧录完成后会进入initramfs系统
+### 方式二：分区烧录
 
-## ubuntu base 安装
-``` bash
-# dchp 获取 IP (可选)
-udhcpc 
-# 配置网口进行连接
+按分区逐一烧录：
+
+```bash
+# 1. 烧录 BOOT.bin（偏移 0x0，大小 2 MB）
+$Vitis_INSTALL_PATH/program_flash \
+  -f $BOOT_PATH/boot.bin \
+  -offset 0x0 \
+  -flash_type qspi-x4-single \
+  -fsbl $BOOT_PATH/fsbl.elf \
+  -verify \
+  -url TCP:127.0.0.1:3121
+
+# 2. 烧录 Kernel（偏移 0x200000，大小 8 MB）
+$Vitis_INSTALL_PATH/program_flash \
+  -f $BOOT_PATH/zImage \
+  -offset 0x200000 \
+  -flash_type qspi-x4-single \
+  -fsbl $BOOT_PATH/fsbl.elf \
+  -verify \
+  -url TCP:127.0.0.1:3121
+
+# 3. 烧录 DTB（偏移 0xa00000，大小 512 KB）
+$Vitis_INSTALL_PATH/program_flash \
+  -f $BOOT_PATH/zynq-booom.dtb \
+  -offset 0xa00000 \
+  -flash_type qspi-x4-single \
+  -fsbl $BOOT_PATH/fsbl.elf \
+  -verify \
+  -url TCP:127.0.0.1:3121
+
+# 4. 烧录 uRamdisk（偏移 0xb00000，大小 2 MB）
+$Vitis_INSTALL_PATH/program_flash \
+  -f $BOOT_PATH/uRamdisk \
+  -offset 0xb00000 \
+  -flash_type qspi-x4-single \
+  -fsbl $BOOT_PATH/fsbl.elf \
+  -verify \
+  -url TCP:127.0.0.1:3121
+```
+
+### 烧录完成
+
+1. 将启动模式切换为 **QSPI 启动**
+2. 连接调试器，打开串口终端
+3. 上电后系统将进入 initramfs
+
+## 6. 安装 Ubuntu Base
+
+### 6.1 网络配置
+
+```bash
+# 通过 DHCP 获取 IP（可选）
+udhcpc
+
+# 或手动配置静态 IP
 ip addr add 192.168.x.x/24 dev eth0
 ip link set eth0 up
 ip route add default via 192.168.x.1
-# 配置dns服务器
+
+# 配置 DNS 服务器
 vi /etc/resolv.conf
-# 写入以下内容（注意：只保留 nameserver 行）
+```
+
+`/etc/resolv.conf` 内容（仅保留 nameserver 行）：
+
+```
 nameserver 223.5.5.5
 nameserver 223.6.6.6
+```
 
-# 格式化 mmcblkp0
+### 6.2 分区与格式化
+
+```bash
+# 对 SD 卡 / eMMC 进行分区
 fdisk /dev/mmcblk0
-创建 boot分区 fat32
-创建 root分区 ext4
+```
 
-# 挂载root分区
+分区方案：
+
+| 分区 | 类型 | 用途 |
+|------|------|------|
+| `/dev/mmcblk0p1` | FAT32 | boot 分区 |
+| `/dev/mmcblk0p2` | ext4 | rootfs 分区 |
+
+### 6.3 创建BOOT分区
+``` bash
+# 挂载 /dev/mmcblk0p1 到 /boot 目录
+mount /dev/mmcblk0p1 /boot
+# 复制 fat32_boot 的内容到 /boot 目录
+# uboot启动脚本优先使用 /boot 分区的内核和设备树启动Linux
+# 失败则回退到QSPI内的内核启动
+```
+
+### 6.4 解压根文件系统
+
+```bash
+# 挂载 rootfs 分区
 mount /dev/mmcblk0p2 /rootfs
 
-# wget 或 xz 获取 ubuntu base文件
+# 获取 Ubuntu Base（可通过 wget 下载或 xz 解压）
 
-# 解压到rootfs
-cd rootfs
+# 解压到 rootfs
+cd /rootfs
 tar -xvf ubuntu-base.tar.gz
+```
 
-# 切换到ubuntu
+### 6.5 配置 Ubuntu 系统
+
+```bash
+# 切换到 Ubuntu 环境
 chroot /rootfs /bin/bash
 
-# 配置 apt 镜像源
-vi /etc/apt/source.list
+# 配置 APT 镜像源
+vi /etc/apt/sources.list
 
 # 更新软件包列表
 apt update
 
 # 安装 systemd 及相关组件
-apt install -y systemd systemd-sysv systemd-timesyncd systemd-resolved dbus dbus-user-session libpam-systemd
+apt install -y systemd systemd-sysv systemd-timesyncd \
+  systemd-resolved dbus dbus-user-session libpam-systemd
 
 # 安装网络管理工具
-apt install -y network-manager netplan.io ifupdown net-tools iputils-ping iproute2
+apt install -y network-manager netplan.io ifupdown \
+  net-tools iputils-ping iproute2
 
 # 安装基础工具
 apt install -y vim nano sudo bash-completion htop less curl wget
 
-# 设置默认启动目标为多用户模式
+# 设置默认启动目标
 systemctl set-default multi-user.target
-
-# 创建必要的符号链接
-ln -sf /lib/systemd/system/multi-user.target /etc/systemd/system/default.target
+ln -sf /lib/systemd/system/multi-user.target \
+  /etc/systemd/system/default.target
 
 # 启用核心服务
 systemctl enable systemd-journald
@@ -140,36 +234,50 @@ systemctl enable dbus
 
 # 配置 DNS 解析
 ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf
+```
 
-# 创建用户
+### 6.6 创建用户
+
+```bash
+# 创建管理员用户
 useradd -m -s /bin/bash admin
-passwd admin  # 设置密码
+passwd admin
 
 # 添加 sudo 权限
 usermod -aG sudo admin
-
-# SSH 服务器（便于远程管理）
-apt install -y openssh-server
-systemctl enable ssh
-
-# 网络连接后可通过 ssh 连接 shell
-# windows 终端执行
-ssh user@192.168.x.x
-# 后续可通过 scp 传输文件
-scp file user@192.168.x.x:~/
-
-
 ```
 
-## 常用功能
-``` bash
-# u-boot 手动引导 linux 启动
-fatload 0x400000 zImage
-fatload 0x100000 uRawdisk
-fatload 0x100 zynq-boooom.dtb
-bootz 0x400000 0x100000 
+### 6.7 安装 SSH（可选）
 
-# fpga bit流加载
+```bash
+apt install -y openssh-server
+systemctl enable ssh
+```
+
+配置完成后可通过 SSH 远程连接：
+
+```bash
+# Windows 终端连接
+ssh user@192.168.x.x
+
+# 通过 SCP 传输文件
+scp file user@192.168.x.x:~/
+```
+
+## 7. 常用操作
+
+### u-boot 手动引导
+
+```bash
+fatload 0x400000 zImage
+fatload 0x100000 uRamdisk
+fatload 0x100 zynq-boooom.dtb
+bootz 0x400000 0x100000
+```
+
+### FPGA bit 流加载
+
+```bash
 fatload 0x1000000 design_1.bit
 fpga load 0 0x1000000
 ```

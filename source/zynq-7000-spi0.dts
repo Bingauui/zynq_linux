@@ -36,24 +36,23 @@
     };
     display@1 {
         compatible = "panel-mipi-dbi-spi";
-	reg = <1>;
+        reg = <1>;
         spi-max-frequency = <38000000>;
-	dc-gpios = <&gpio0 56 0>;
-	reset-gpios = <&gpio0 57 0>;
-        width-mm = <61>;
-        height-mm = <103>;	
-	panel-timing {
-    		clock-frequency = <30000000>;
-    		hactive = <240>;           /* hdisplay */
-       		hfront-porch = <0>;      // hsync_start - hdisplay = 278 - 240
-    		hsync-len = <0>;         // hsync_end - hsync_start = 288 - 278
-		hback-porch = <0>;             // htotal - hsync_end
-       		
-		vactive = <280>;           /* vdisplay */
-            	vfront-porch = <0>;       // vsync_start - vdisplay = 328 - 320
-    		vsync-len = <0>;          // vsync_end - vsync_start = 332 - 328
-    		vback-porch = <20>;              // vtotal - vsync_end
-           
-  	};	
+        dc-gpios = <&gpio0 56 0>;
+        reset-gpios = <&gpio0 57 0>;
+            width-mm = <61>;
+            height-mm = <103>;	
+            panel-timing {
+                clock-frequency = <30000000>;
+                hactive = <240>;           /* hdisplay */
+                hfront-porch = <0>;      // hsync_start - hdisplay = 278 - 240
+                hsync-len = <0>;         // hsync_end - hsync_start = 288 - 278
+                hback-porch = <0>;             // htotal - hsync_end
+                
+                vactive = <280>;           /* vdisplay */
+                vfront-porch = <0>;       // vsync_start - vdisplay = 328 - 320
+                vsync-len = <0>;          // vsync_end - vsync_start = 332 - 328
+                vback-porch = <20>;              // vtotal - vsync_end
+        };	
     };
 };
