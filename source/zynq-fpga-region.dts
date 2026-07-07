@@ -1,0 +1,39 @@
+/dts-v1/;
+/plugin/;
+
+&fpga_full {
+    #address-cells = <1>;
+    #size-cells = <1>;
+    status = "okay";
+    firmware-name = "fdesign_1_wrapper.bit";
+
+    adc: adc@43c00000 {
+    	compatible = "xlnx,axi-xadc-1.00.a";
+	reg = <0x43c00000 0x10000>;
+	clocks = <&clkc 15>;
+	clock-names = "s_axi_aclk";
+	xlnx,external-mux = "none";
+	xlnx,external-mux-channel = <5>;
+	status = "okay";
+	xlnx,channels {
+            #address-cells = <1>;
+            #size-cells = <0>;
+    	    channel@0 {
+	    	reg = <0>;
+	    };
+	    channel@1 {
+                reg = <1>;
+	    };
+            channel@2 {
+           	reg = <2>;	 
+            };
+            channel@3 {
+                reg = <3>;
+            };
+            channel@4 {
+                reg = <4>;
+            };
+	};
+    };
+};
+

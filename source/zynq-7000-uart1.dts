@@ -1,0 +1,23 @@
+/dts-v1/;
+/plugin/;
+
+
+&pinctrl0 {
+	pinctrl_uart1_default: uart1-default {
+		mux {
+			groups = "uart1_0_grp";
+			function = "uart1";
+		};
+
+		conf {
+			groups = "uart1_0_grp";
+			slew-rate = <0>;
+			power-source = <1>;
+		};
+	};
+};
+
+&uart1 {
+	bootph-all;
+        status = "okay";
+};

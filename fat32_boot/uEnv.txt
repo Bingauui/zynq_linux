@@ -1,0 +1,10 @@
+kernel_file=zImage
+initramfs_file=uRamdisk
+dtb_file=zynq-booom.dtb
+bitstream_file=design_1_wrapper.bit
+# DTBO Overlay
+dtbo_files=zynq-fpga-region.dtbo zynq-7000-sdhci1-200M.dtbo zynq-7000-uart1.dtbo zynq-7000-spi0.dtbo zynq-7000-usb-otg.dtbo
+# zynq-7000-uart1.dtbo zynq-7000-sdhci0.dtbo zynq-7000-usb-peripheral.dtbo zynq-7000-usb-otg.dtbo
+
+# uboot env bootargs
+bootargs=console=ttyPS0,115200 earlycon

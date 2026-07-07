@@ -1,0 +1,17 @@
+/dts-v1/;
+/plugin/;
+
+&gpio0 {
+	status = "okay";
+	usb_reset {
+        	gpio-hog;
+        	gpios = <8 0>;
+        	output-high;
+        	line-name = "usb-reset-high";
+    	};
+};
+
+&usb0 {
+	dr_mode = "otg";
+   	status = "okay";
+};

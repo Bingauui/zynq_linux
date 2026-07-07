@@ -1,0 +1,59 @@
+/dts-v1/;
+/plugin/;
+
+&gpio0 {
+    status = "okay";
+    lcd_power {
+        gpio-hog;
+        gpios = <59 0>;
+        output-high;
+    	line-name = "lcd-vcc-high";
+    };
+
+    lcd_groud {
+        gpio-hog;
+        gpios = <58 0>;
+        output-low;
+        line-name = "lcd-gnd-low";
+    };
+};
+
+&dmac_s {
+    status = "okay";
+};
+
+&spi0 {
+    status = "okay";
+    num-cs = <3>;
+    #address-cells = <1>;
+    #size-cells = <0>;
+    dmas = <&dmac_s 0>, <&dmac_s 1>;
+    dma-names = "tx", "rx";
+    spidev@0 {
+        compatible = "abb,spi-sensor";          /* 关键！使用通用驱动 */
+        reg = <0>;
+        spi-max-frequency = <38000000>;
+    };
+    display@1 {
+        compatible = "panel-mipi-dbi-spi";
+	reg = <1>;
+        spi-max-frequency = <38000000>;
+	dc-gpios = <&gpio0 56 0>;
+	reset-gpios = <&gpio0 57 0>;
+        width-mm = <61>;
+        height-mm = <103>;	
+	panel-timing {
+    		clock-frequency = <30000000>;
+    		hactive = <240>;           /* hdisplay */
+       		hfront-porch = <0>;      // hsync_start - hdisplay = 278 - 240
+    		hsync-len = <0>;         // hsync_end - hsync_start = 288 - 278
+		hback-porch = <0>;             // htotal - hsync_end
+       		
+		vactive = <280>;           /* vdisplay */
+            	vfront-porch = <0>;       // vsync_start - vdisplay = 328 - 320
+    		vsync-len = <0>;          // vsync_end - vsync_start = 332 - 328
+    		vback-porch = <20>;              // vtotal - vsync_end
+           
+  	};	
+    };
+};

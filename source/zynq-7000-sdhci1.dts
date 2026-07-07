@@ -1,0 +1,10 @@
+/dts-v1/;
+/plugin/;
+
+&sdhci1 {
+	max-frequency = <200000000>;
+	clock-frequency = <150000000>;
+	mmc-hs200-1_8v;
+        status = "okay";
+	non-removable;
+};

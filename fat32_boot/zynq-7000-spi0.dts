@@ -1,0 +1,64 @@
+/dts-v1/;
+/plugin/;
+
+/ {
+    framebuffer {
+    	compatible = "simple-framebuffer";
+    	width = <240>;
+    	height = <320>;
+    	stride = <(240 * 2)>;
+    	format = "r5g6b5";
+    	status = "okay";
+    };
+};
+
+&gpio0 {
+    status = "okay";
+    lcd_power {
+        gpio-hog;
+        gpios = <59 0>;
+        output-high;
+    	line-name = "lcd-vcc-high";
+    };
+
+    lcd_groud {
+        gpio-hog;
+        gpios = <58 0>;
+        output-low;
+        line-name = "lcd-gnd-low";
+    };
+};
+
+&spi0 {
+    status = "okay";
+    num-cs = <2>;
+    #address-cells = <1>;
+    #size-cells = <0>;
+    spidev@0 {
+        compatible = "abb,spi-sensor";          /* 关键！使用通用驱动 */
+        reg = <0>;
+        spi-max-frequency = <10000000>;
+    };
+    display@1 {
+        compatible = "panel-mipi-dbi-spi";
+	reg = <1>;
+        spi-max-frequency = <10000000>;
+	dc-gpios = <&gpio0 56 1>;
+	reset-gpios = <&gpio0 57 1>;
+        panel: panel {
+            compatible = "sitronix,st7789v";
+    
+            panel-timing {
+                clock-frequency = <6000000>;    /* 6 MHz 像素时钟 */
+                hactive = <240>;                /* 水平分辨率 */
+                vactive = <320>;                /* 垂直分辨率 */
+                hfront-porch = <10>;            /* 水平前肩 */
+                hback-porch = <10>;             /* 水平后肩 */
+                hsync-len = <10>;               /* 水平同步宽度 */
+                vfront-porch = <4>;             /* 垂直前肩 */
+                vback-porch = <4>;              /* 垂直后肩 */
+                vsync-len = <4>;                /* 垂直同步宽度 */
+            };
+	};
+    };
+};

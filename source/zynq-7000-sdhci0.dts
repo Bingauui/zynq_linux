@@ -1,0 +1,6 @@
+/dts-v1/;
+/plugin/;
+
+&sdhci0 {
+        status = "okay";
+};
