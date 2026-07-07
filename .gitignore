@@ -1,0 +1,29 @@
+# ============================================================
+# General ignore rules (applies to entire repo)
+# ============================================================
+
+# --- OS generated files ---
+Thumbs.db
+.DS_Store
+Desktop.ini
+$RECYCLE.BIN/
+
+# --- Editor / IDE ---
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.bak
+
+# --- Archive files ---
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.7z
+*.rar
+
+# --- Temporary files ---
+*.tmp
+*.temp

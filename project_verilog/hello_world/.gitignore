@@ -1,0 +1,25 @@
+# --- Build output ---
+/build/
+
+# --- Object files and dependency files ---
+*.o
+*.d
+
+# --- Vitis generated ---
+_ide/
+.vitis/
+*.clangd
+compile_commands.json
+vitis-comp.json
+
+# --- Logs ---
+/logs/
+*.log
+
+# --- Lock files ---
+*.lock
+
+# --- Firmware binaries ---
+*.elf
+*.bin
+*.pdi

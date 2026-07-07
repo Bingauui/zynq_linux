@@ -1,0 +1,73 @@
+# ============================================================
+# Vivado / Vitis FPGA Project - Ignore Rules
+# ============================================================
+
+# --- Vivado project generated directories ---
+/.Xil/
+*.cache/
+*.gen/
+*.runs/
+*.sim/
+*.hw/
+*.ip_user_files/
+*.ioplanning/
+
+# --- Vitis platform (auto-generated from .xsa, can regenerate) ---
+/platform/
+
+# --- Vitis IDE generated ---
+.theia/
+*.vitisWorkspace.json
+.peers.ini
+.repo.yaml
+_ide/
+*.clangd
+compile_commands.json
+vitis-comp.json
+
+# --- Vivado logs & journals ---
+/logs/
+vivado*.jou
+vivado*.log
+vivado_*.backup.jou
+vivado_*.backup.log
+*.jou
+*.log
+
+# --- Lock files ---
+*.lock
+
+# --- Build artifacts ---
+*.bin
+*.bit
+*.mcs
+*.prm
+*.pdi
+*.dcp
+*.elf
+
+# --- Object / dependency files ---
+*.o
+*.d
+
+# --- Temporary / backup files ---
+*~
+*.swp
+*.bak
+*.backup.jou
+*.backup.log
+*.str
+
+# --- OS generated files ---
+Thumbs.db
+.DS_Store
+
+# ============================================================
+# NOTE: Source files intentionally KEPT in git:
+#   project_verilog.srcs/   — .v .sv .vhd .xdc .bd .xci .bda
+#   project_verilog.xpr     — Vivado project file
+#   design_1_wrapper.xsa    — hardware definition export
+#   openocd.cfg             — debug config
+#   hello_world/src/        — Vitis app source
+#   linux_hello_world/src/  — Vitis Linux app source
+# ============================================================
