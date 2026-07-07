@@ -8,12 +8,13 @@
 
 ### 软件安装
 #### Vitis 2023.02 
-BOOT.bin 生成工具
-烧录QSPI Flash 工具
-fsbl 固件编译
+- BOOT.bin 生成工具
+- 烧录QSPI Flash 工具
+- fsbl 固件编译
 
 #### Vivado 2023.02
-FPGA bit流生成
+- FPGA bit流生成
+- PS 外设引脚导出
 
 ### 目录结构
 ``` bash
