@@ -1,6 +1,20 @@
 # ZYNQ Boooom Linux 安装流程
 ## BOOT 烧录
 
+### 硬件准备
+#### ZYNQ Boooom 核心板 * 1
+#### ZYNQ Boooom 底板 * 1
+#### FTDI 调试器 * 1
+
+### 软件安装
+#### Vitis 2023.02 
+BOOT.bin 生成工具
+烧录QSPI Flash 工具
+fsbl 固件编译
+
+#### Vivado 2023.02
+FPGA bit流生成
+
 ### 目录结构
 ``` bash
 boot 
