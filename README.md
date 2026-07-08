@@ -325,6 +325,35 @@ vi /etc/fstab
 
 ## 7. 常用操作
 
+### ST7789V LCD屏幕驱动
+``` bash
+# 编译zynq-7000-spi0.dts设备树文件
+dtc -@ -I dts -O dtb zynq-7000-spi0.dts -o zynq-7000-spi0.dtbo
+# 复制到boot分区
+sudo cp zynq-7000-spi0.dtbo /boot/
+# 修改uEnv.txt 加载设备树,多个文件使用空格分隔
+dtbo_files=zynq-7000-spi0.dtbo zynq-xxx.dtbo
+# 重启并加载驱动
+sudo reboot
+```
+因为是通过initramfs加载的根文件系统，无法在内核启动阶段读取到屏幕初始化固件，需要在启动后手动触发驱动加载。
+也可以重新生成initramfs添加panel-mipi-dbi-spi.bin固件在内核启动阶段自动加载驱动。
+```bash
+sudo cp panel-mipi-dbi-spi.bin /lib/firmware
+echo "spi1.1" | sudo tee /sys/bus/spi/drivers/panel-mipi-dbi-spi/bind
+# 加载成功后会出现 /dev/dri/card0 /dev/fb0 两个设备
+# 安装 drmtests
+sudo apt install drmtests
+# 执行后屏幕应正常显示
+sudo modetests -M panel
+# 刷屏测试
+sudo dd if=/dev/zero of=/dev/fb0 bs=1M status=progress
+watch -n 0.015 sudo dd if=/dev/random of=/dev/fb0 bs=1M status=progress
+# 卸载驱动
+echo "spi1.1" | sudo tee /sys/bus/spi/drivers/panel-mipi-dbi-spi/unbind
+```
+
+
 ### initramfs 切换到 root
 ```bash
 # /rootfs 根文件系统路径
