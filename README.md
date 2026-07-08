@@ -229,15 +229,16 @@ mount /dev/mmcblk1p1 /boot
 # 复制 fat32_boot 的内容到 /boot 目录
 # uboot启动脚本优先使用 /boot 分区的内核和设备树启动Linux
 # 失败则回退到QSPI内的内核启动
+
 ```
 
 ### 6.4 解压根文件系统
 
 ```bash
 # 挂载 rootfs 分区
-mount /dev/mmcblk0p2 /rootfs
+mount /dev/mmcblk1p2 /rootfs
 
-# 获取 Ubuntu Base（可通过 wget 下载或 xz 解压）
+# 获取 Ubuntu Base（可通过 wget 下载或 nc 本地传输）
 
 # 解压到 rootfs
 cd /rootfs
@@ -253,6 +254,10 @@ chroot /rootfs /bin/bash
 # 配置 APT 镜像源
 vi /etc/apt/sources.list
 
+deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu-ports/ jammy main restricted universe multiverse
+deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu-ports/ jammy-updates main restricted universe multiverse
+deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu-ports/ jammy-backports main restricted universe multiverse
+deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu-ports/ jammy-security main restricted universe multiverse
 # 更新软件包列表
 apt update
 
@@ -311,20 +316,36 @@ ssh user@192.168.x.x
 scp file user@192.168.x.x:~/
 ```
 
+### 添加BOOT自动挂载
+```bash
+vi /etc/fstab
+# UNCONFIGURED FSTAB FOR BASE SYSTEM
+/dev/mmcblk1p1 /boot vfat defaults 0 0
+```
+
 ## 7. 常用操作
 
+### initramfs 切换到 root
+```bash
+# /rootfs 根文件系统路径
+exec switch_root /rootfs /sbin/init
+```
 ### u-boot 手动引导
 
 ```bash
 fatload 0x400000 zImage
 fatload 0x100000 uRamdisk
 fatload 0x100 zynq-boooom.dtb
-bootz 0x400000 0x100000
+bootz 0x400000 0x100000 0x100
 ```
 
 ### FPGA bit 流加载
 
 ```bash
-fatload 0x1000000 design_1.bit
+fatload 0x1000000 design_1_wrapper.bit
 fpga load 0 0x1000000
 ```
+
+### 硬件相关文档
+切换启动模式/硬件原理图等
+[Boooom ZYNQ硬件项目](https://boooom.cn/archives/BoooomZYNQ)
