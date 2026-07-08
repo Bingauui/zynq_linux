@@ -326,6 +326,8 @@ vi /etc/fstab
 ## 7. 常用操作
 
 ### ST7789V LCD屏幕驱动
+下图对应扩展版右下角引出引脚  
+![扩展版接线参考](./docs/IO_define.png)
 ``` bash
 # 编译zynq-7000-spi0.dts设备树文件
 dtc -@ -I dts -O dtb zynq-7000-spi0.dts -o zynq-7000-spi0.dtbo
@@ -353,6 +355,32 @@ watch -n 0.015 sudo dd if=/dev/random of=/dev/fb0 bs=1M status=progress
 echo "spi1.1" | sudo tee /sys/bus/spi/drivers/panel-mipi-dbi-spi/unbind
 ```
 
+### USB驱动
+USB驱动如无法创建，排查晶振是否正常起振。  
+可更换负载电容或刮开核心板 USB PHY 晶振 到 RESET 按钮之间的第一个过孔触点飞线到晶振输入引脚。  
+OTG模式下可通过USB ID信号进行HOST Device切换。  
+默认Device模式，可添加udev规则加载USB网卡驱动共享电脑网络。
+```bash
+
+```  
+
+### MMC高速模式
+添加zynq-7000-sdhci1.dtbo可启用HS200高速模式，测试稳定的最高时钟为150M
+
+### FPGA 加载固件
+在uEnv.txt添加bit流文件后，uboot阶段自动加载。    
+当前FPGA固件产生25Mhz时钟通过AXI Lite控制。  
+```bash
+# 启用FPGA 25Mhz时钟输出
+busybox devmem 0x40001000 8 1
+# 关闭时钟输出
+busybox devmem 0x40001000 8 0
+```
+FPGA LED 控制
+```bash
+# 50%输出 输出占空比范围 0-255
+busybox devmem 0x40000000 8 127
+```
 
 ### initramfs 切换到 root
 ```bash
